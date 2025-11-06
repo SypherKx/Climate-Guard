@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AR - Plant Viewer</title>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <style>
+    html,body{height:100%;margin:0;background:#000}
+    #overlay{position:fixed;left:10px;top:10px;z-index:20;display:flex;gap:8px;flex-wrap:wrap}
+    button{padding:10px 14px;border-radius:8px;border:none;background:#7fff00;color:#000;font-weight:700;cursor:pointer}
+    #info{position:fixed;right:10px;top:10px;z-index:20;background:rgba(255,255,255,0.95);color:#000;padding:8px 10px;border-radius:8px;font-family:Arial,Helvetica,sans-serif}
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <button id="startAR">Start AR</button>
+    <button id="placeBtn" style="display:none">Place Plant</button>
+    <button id="removeBtn" style="display:none">Remove</button>
+  </div>
+  <div id="info" aria-live="polite"></div>
+
+  <a-scene embedded renderer="colorManagement: true;" vr-mode-ui="enabled: false" webxr="optionalFeatures: hit-test,local-floor,dom-overlay;overlayElement:#overlay" device-orientation-permission-ui="enabled: true;">
+    <a-entity light="type: ambient; intensity: 0.8"></a-entity>
+    <a-entity light="type: directional; intensity: 0.6" position="1 3 2"></a-entity>
+
+    <a-entity id="reticle" visible="false" geometry="primitive:ring; radiusInner:0.04; radiusOuter:0.05" material="color: #7fff00; shader:flat" rotation="-90 0 0"></a-entity>
+
+    <!-- Generic potted plant model (same model for all plants) -->
+    <a-entity id="model" visible="false" gltf-model="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/PottedLily/glTF-Binary/PottedLily.glb"></a-entity>
+
+    <!-- Floating label group -->
+    <a-entity id="labelGroup" position="0 0 0" visible="false">
+      <a-entity id="labelPlane" geometry="primitive: plane; height: 0.2; width: 1.2" material="color: #ffffff; opacity: 0.85;"></a-entity>
+      <a-entity id="labelText" text="value: ; align:center; color:#000; wrapCount:30" position="0 0 0.01"></a-entity>
+    </a-entity>
+
+    <a-camera id="camera" position="0 1.6 0"></a-camera>
+  </a-scene>
+
+<script>
+(async function(){
+  const startBtn = document.getElementById('startAR');
+  const placeBtn = document.getElementById('placeBtn');
+  const removeBtn = document.getElementById('removeBtn');
+  const infoDiv = document.getElementById('info');
+  const scene = document.querySelector('a-scene');
+  const reticle = document.getElementById('reticle');
+  const model = document.getElementById('model');
+  const labelGroup = document.getElementById('labelGroup');
+  const labelText = document.getElementById('labelText');
+
+  const params = new URLSearchParams(window.location.search);
+  let plantName = params.get('plant') || 'Unknown Plant';
+  let heightVal = parseFloat(params.get('height')) || null;
+  let widthVal = parseFloat(params.get('width')) || null;
+
+  if (!heightVal) heightVal = 0.6;
+  if (!widthVal) widthVal = 0.4;
+
+  infoDiv.innerHTML = `<strong>${plantName}</strong><br>Height: ${heightVal} m · Width: ${widthVal} m`;
+  labelText.setAttribute('text', 'value', `${plantName} — H:${heightVal} m W:${widthVal} m`);
+
+  function setModelScaleByHeight(h) {
+    const baseModelHeight = 1.0;
+    const scale = Math.max(0.05, h / baseModelHeight);
+    if (model.object3D && model.object3D.scale) model.object3D.scale.set(scale, scale, scale);
+    labelGroup.object3D.position.set(0, h + 0.15, 0);
+    const w = Math.min(1.8, Math.max(0.6, (plantName.length / 10) + 0.8));
+    const plane = document.getElementById('labelPlane');
+    plane.setAttribute('geometry', `primitive: plane; height: 0.2; width: ${w}`);
+    labelText.setAttribute('position', `0 0 0.01`);
+  }
+
+  let xrSession = null;
+  let xrRefSpace = null;
+  let hitTestSource = null;
+
+  startBtn.addEventListener('click', async ()=>{
+    if (!navigator.xr) { alert('WebXR not available on this device/browser. Try Chrome on Android or Safari on iOS (with AR support).'); return; }
+    const supported = await navigator.xr.isSessionSupported('immersive-ar');
+    if (!supported) { alert('AR not supported on this device.'); return; }
+    xrSession = await navigator.xr.requestSession('immersive-ar', { requiredFeatures:['hit-test','local-floor'], optionalFeatures:['dom-overlay'], domOverlay: { root: document.body } });
+    scene.renderer.xr.setSession(xrSession);
+    xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
+    const viewerSpace = await xrSession.requestReferenceSpace('viewer');
+    hitTestSource = await xrSession.requestHitTestSource({ space: viewerSpace });
+    xrSession.addEventListener('end', ()=>{
+      hitTestSource = null; xrSession = null;
+      startBtn.style.display = 'inline-block';
+      placeBtn.style.display = 'none';
+      removeBtn.style.display = 'none';
+      reticle.setAttribute('visible', 'false');
+      model.setAttribute('visible', 'false');
+      labelGroup.setAttribute('visible', 'false');
+    });
+    startBtn.style.display = 'none';
+    placeBtn.style.display = 'inline-block';
+    removeBtn.style.display = 'inline-block';
+    xrSession.requestAnimationFrame(onXRFrame);
+  });
+
+  function onXRFrame(time, frame){
+    if (!xrSession) return;
+    xrSession.requestAnimationFrame(onXRFrame);
+    const results = frame.getHitTestResults(hitTestSource);
+    if (results && results.length > 0) {
+      const pose = results[0].getPose(xrRefSpace);
+      if (!pose) return;
+      reticle.object3D.position.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
+      reticle.object3D.quaternion.set(pose.transform.orientation.x, pose.transform.orientation.y, pose.transform.orientation.z, pose.transform.orientation.w);
+      reticle.setAttribute('visible', 'true');
+    } else {
+      reticle.setAttribute('visible', 'false');
+    }
+  }
+
+  placeBtn.addEventListener('click', ()=>{
+    if (reticle.getAttribute('visible') !== true && reticle.getAttribute('visible') !== 'true') { alert('Move your phone slowly so the AR system can find a flat surface.'); return; }
+    const pos = reticle.object3D.position;
+    model.object3D.position.set(pos.x, pos.y, pos.z);
+    labelGroup.object3D.position.set(pos.x, pos.y + heightVal + 0.15, pos.z);
+    model.setAttribute('visible', 'true');
+    labelGroup.setAttribute('visible', 'true');
+    setModelScaleByHeight(heightVal);
+  });
+
+  removeBtn.addEventListener('click', ()=>{
+    model.setAttribute('visible', 'false');
+    labelGroup.setAttribute('visible', 'false');
+  });
+
+  model.addEventListener('model-loaded', ()=>{
+    setModelScaleByHeight(heightVal);
+  });
+
+  labelText.setAttribute('text', `value: ${plantName} — H:${heightVal} m W:${widthVal} m; align:center; color:#000; wrapCount:30`);
+
+})();</script>
+</body>
+</html>

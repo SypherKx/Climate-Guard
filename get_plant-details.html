@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual Garden (AR Only)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ar.js@3.3.2/aframe/build/aframe-ar.min.js"></script>
+
+  <style>
+    header {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    nav a {
+      color: white;
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #7fff00;
+    }
+  </style>
+</head>
+
+<body class="bg-green-50 font-sans text-gray-800">
+  <header class="bg-green-700 text-white p-6 text-center text-2xl font-bold">
+    🌿 Virtual Garden Planner
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="plants.html">Plants</a>
+      <a href="conditions.html">Conditions</a>
+      <a href="get_plant-details.html">Plants suggestion</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main class="max-w-3xl mx-auto p-6 space-y-6">
+    <!-- Upload Section -->
+    <section class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Upload Your Outdoor Space</h2>
+      <input type="file" id="imageUpload" accept="image/*" class="block w-full border p-2 rounded" />
+    </section>
+
+    <!-- Preview + Analysis -->
+    <section class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Preview & Analysis</h2>
+      <img id="imagePreview" alt="Uploaded preview" class="w-full max-h-80 object-contain hidden border rounded" />
+      <div id="analysisResult" class="mt-3 text-gray-700 text-sm"></div>
+    </section>
+
+    <!-- Suggested Plants -->
+    <section id="suggestions" class="bg-white p-6 rounded shadow hidden">
+      <h2 class="text-xl font-semibold mb-4">Suggested Plants</h2>
+      <p id="categoryNote" class="text-gray-600 mb-4"></p>
+      <div id="plantsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- AR Mode -->
+    <section class="text-center">
+      <button onclick="launchAR()"
+        id="launchBtn"
+        class="bg-purple-600 text-white px-6 py-3 rounded-full hover:bg-purple-700 disabled:opacity-50"
+        disabled>
+        Launch AR Mode
+      </button>
+      <p class="text-sm text-gray-600 mt-2">Choose an image first to enable AR mode.</p>
+
+      <div class="mt-4 flex flex-col items-center gap-3">
+        <div class="flex gap-2">
+          <button id="viewMarkerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">View Hiro Marker</button>
+          <a href="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/examples/marker-training/examples/hiro.png" target="_blank" class="px-4 py-2 rounded border text-green-700 bg-white hover:bg-green-50">Open in new tab</a>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
+          <label for="pattUpload">Use custom marker (.patt):</label>
+          <input type="file" id="pattUpload" accept=".patt" class="text-sm" />
+          <button id="resetMarkerBtn" class="px-3 py-1 rounded border bg-white hover:bg-gray-50">Reset to Hiro</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- AR Scene -->
+  <section id="arScene" style="display:none;">
+    <a-scene embedded arjs>
+      <a-assets>
+        <img id="uploadedTexture" crossorigin="anonymous" />
+      </a-assets>
+      <a-marker id="markerNode" preset="hiro">
+        <a-entity id="photoPlane" geometry="primitive: plane; height: 1; width: 1.5" rotation="-90 0 0" position="0 0 0" material="src: #uploadedTexture; side: double"></a-entity>
+      </a-marker>
+      <a-entity camera></a-entity>
+    </a-scene>
+  </section>
+
+  <!-- Marker Modal -->
+  <div id="markerModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4">
+    <div class="bg-white p-4 rounded shadow max-w-3xl w-full">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-lg font-semibold">Hiro Marker</h3>
+        <button id="closeMarkerModal" class="text-gray-600 hover:text-black">✕</button>
+      </div>
+      <img id="hiroImg" src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/examples/marker-training/examples/hiro.png" alt="Hiro Marker" class="w-full h-auto border" />
+      <p class="text-xs text-gray-600 mt-2">Print or show this on another device. Point your camera at it to see AR content.</p>
+    </div>
+  </div>
+
+  <!-- How to Use AR Mode -->
+  <section class="max-w-3xl mx-auto p-6 bg-white rounded shadow mt-6">
+    <h2 class="text-xl font-semibold mb-4">📸 How to Use AR Mode</h2>
+    <p class="text-gray-700 mb-2">
+      The Augmented Reality (AR) feature lets you visualize virtual garden elements in your real-world space using your device camera.
+    </p>
+    <ol class="list-decimal pl-6 text-gray-700 space-y-2">
+      <li>Make sure your device has a working camera and internet connection.</li>
+      <li>Print or display a <strong>Hiro marker</strong> — a black-and-white square used for AR tracking. You can download one from <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/aframe/examples/marker-training/examples/hiro.png" target="_blank" class="text-green-700 underline">here</a>.</li>
+      <li>Click the <strong>Launch AR Mode</strong> button above.</li>
+      <li>Allow camera access when prompted by your browser.</li>
+      <li>Point your camera at the Hiro marker. A green virtual box will appear on top of the marker.</li>
+    </ol>
+    <p class="mt-4 text-sm text-gray-600">
+      This demo uses a simple green box. You can replace it with plant models or garden layouts using 3D assets (.glb or .gltf).
+    </p>
+  </section>
+
+  <footer class="text-center text-sm text-gray-500 mt-12 p-4">
+    &copy; 2025 Virtual Garden | Built with 🌱 by Kavya & Kautilya
+  </footer>
+
+  <script>
+    const input = document.getElementById('imageUpload');
+    const preview = document.getElementById('imagePreview');
+    const analysisResult = document.getElementById('analysisResult');
+    const uploadedTexture = document.getElementById('uploadedTexture');
+    const launchBtn = document.getElementById('launchBtn');
+
+    let imageURL = null;
+    let inferredCategory = null;
+
+    // Simple catalog with details per category
+    const plantCatalog = {
+      desert: [
+        { name: 'Cactus', details: 'Extremely drought-tolerant; needs full sun and sandy, fast-draining soil.' },
+        { name: 'Aloe Vera', details: 'Succulent storing water in leaves; bright sun, water sparingly.' },
+        { name: 'Agave', details: 'Architectural succulent; thrives in heat with minimal water.' },
+        { name: 'Bougainvillea', details: 'Vibrant bracts; loves hot, dry conditions and poor soil.' },
+        { name: 'Yucca', details: 'Bold sword-like leaves; full sun and dry soil.' },
+        { name: 'Desert Rose', details: 'Showy caudiciform; needs intense light and little water.' }
+      ],
+      tropical: [
+        { name: 'Coconut Tree', details: 'Warm coastal climates; sandy soil and high humidity.' },
+        { name: 'Banana Plant', details: 'Fast-growing; rich moist soil, frequent watering, shelter from wind.' },
+        { name: 'Hibiscus', details: 'Sun-loving shrub; blooms best with heat and regular moisture.' },
+        { name: 'Mango Tree', details: 'Hot summer fruit tree; deep soil and good drainage.' },
+        { name: 'Areca Palm', details: 'Graceful palm for humid zones; indirect to bright light.' },
+        { name: 'Jasmine', details: 'Fragrant climber/shrub; warm humid air and sun.' }
+      ],
+      temperate: [
+        { name: 'Tulip', details: 'Spring bulbs; cool winters and well-drained soil.' },
+        { name: 'Sunflower', details: 'Full sun annual; deep, well-drained soil and moderate water.' },
+        { name: 'Lavender', details: 'Prefers dry, sunny sites; alkaline, free-draining soil.' },
+        { name: 'Rose', details: 'Full sun; fertile soil and consistent watering.' },
+        { name: 'Rosemary', details: 'Mediterranean herb; sun and lean, well-drained soil.' },
+        { name: 'Maple Tree', details: 'Cool-moderate climates; ample space and seasonal chill.' }
+      ],
+      cold: [
+        { name: 'Pine Tree', details: 'Evergreen conifer; hardy to snow and poor soils.' },
+        { name: 'Apple Tree', details: 'Requires winter chilling; well-drained loam and full sun.' },
+        { name: 'Cedar', details: 'Cold-tolerant conifer; needs space and drainage.' },
+        { name: 'Fir Tree', details: 'Loves cool mountains; moist, acidic soil.' },
+        { name: 'Spruce', details: 'Wind and frost hardy; prefers cool climates.' },
+        { name: 'Birch Tree', details: 'Thrives in cool regions; moist, well-drained soil.' }
+      ],
+      humid: [
+        { name: 'Rice', details: 'Flooded paddies or very wet soil; warm temperatures.' },
+        { name: 'Fern', details: 'Shade-loving; constant moisture and humidity.' },
+        { name: 'Bamboo', details: 'Fast-growing grass; humid air and regular water.' },
+        { name: 'Lotus', details: 'Aquatic; still water in warm, sunny locations.' },
+        { name: 'Ginger', details: 'Warm, moist soil; part shade and humidity.' },
+        { name: 'Turmeric', details: 'Tropical rhizome; humidity and rich soil.' }
+      ],
+      coastal: [
+        { name: 'Mangrove', details: 'Salt-tolerant; thrives in tidal, coastal wetlands.' },
+        { name: 'Sea Grape', details: 'Coastal tree; tolerates salt spray and sandy soil.' },
+        { name: 'Beach Grass', details: 'Dune stabilizer; wind and salt tolerant.' },
+        { name: 'Casuarina', details: 'Windbreak tree; sandy coastal soils.' },
+        { name: 'Saltbush', details: 'Halophyte; survives saline conditions.' },
+        { name: 'Cordgrass', details: 'Marsh plant; brackish wetlands.' }
+      ],
+      indoor: [
+        { name: 'Snake Plant', details: 'Very tough; low light, minimal watering, purifies air.' },
+        { name: 'Money Plant (Pothos)', details: 'Tolerant vine; water or soil, bright-indirect light.' },
+        { name: 'Spider Plant', details: 'Easy indoor; bright-indirect light and moderate water.' },
+        { name: 'Peace Lily', details: 'Low light tolerant; likes evenly moist soil.' },
+        { name: 'ZZ Plant', details: 'Thrives on neglect; low to medium light.' },
+        { name: 'Rubber Plant', details: 'Bright-indirect light; allow topsoil to dry between waterings.' }
+      ]
+    };
+
+    input.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      imageURL = URL.createObjectURL(file);
+      preview.src = imageURL;
+      preview.classList.remove('hidden');
+      // Set texture for AR plane
+      uploadedTexture.setAttribute('src', imageURL);
+      launchBtn.disabled = false;
+      analyzeImage(preview)
+        .then((res) => {
+          inferredCategory = res.category;
+          analysisResult.innerHTML = `${res.message}`;
+        })
+        .catch(() => {
+          inferredCategory = 'temperate';
+          analysisResult.textContent = 'Could not analyze image. Showing general recommendations.';
+        });
+    });
+
+    async function analyzeImage(imgEl) {
+      if (imgEl.decode) { try { await imgEl.decode(); } catch (_) {} }
+      const canvas = document.createElement('canvas');
+      const size = 256;
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(imgEl, 0, 0, size, size);
+      const { data } = ctx.getImageData(0, 0, size, size);
+      let sumBright = 0, greenish = 0;
+      const pixels = size * size;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i+1], b = data[i+2];
+        const bright = 0.299*r + 0.587*g + 0.114*b;
+        sumBright += bright;
+        if (g > r + 10 && g > b + 10) greenish++;
+      }
+      const avgBright = sumBright / pixels; // 0..255
+      const greenRatio = greenish / pixels; // 0..1
+      let category = 'temperate';
+      if (avgBright < 105 && greenRatio < 0.25) category = 'indoor';
+      else if (avgBright > 180 && greenRatio < 0.15) category = 'desert';
+      else if (greenRatio > 0.35 && avgBright > 140) category = 'tropical';
+      else if (greenRatio > 0.25) category = 'temperate';
+      else if (avgBright > 150) category = 'coastal';
+      const message = `Detected brightness ≈ ${avgBright.toFixed(0)}, greenery ${Math.round(greenRatio*100)}%. Inferred: <b>${category}</b>.`;
+      return { category, message };
+    }
+
+    function renderSuggestions(category) {
+      const el = document.getElementById('suggestions');
+      const listEl = document.getElementById('plantsContainer');
+      const note = document.getElementById('categoryNote');
+      const list = plantCatalog[category] || plantCatalog['temperate'];
+      note.textContent = `Based on your photo, we recommend plants suited for ${category} conditions.`;
+      listEl.innerHTML = '';
+      list.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'border rounded p-4';
+        card.innerHTML = `<h3 class="font-semibold text-green-700">${p.name}</h3><p class="text-sm mt-1 text-gray-700">${p.details}</p>`;
+        listEl.appendChild(card);
+      });
+      el.classList.remove('hidden');
+    }
+
+    function launchAR() {
+      if (!imageURL) {
+        alert('Please choose an image first.');
+        return;
+      }
+      document.getElementById('arScene').style.display = 'block';
+      renderSuggestions(inferredCategory || 'temperate');
+    }
+
+    // Marker helpers
+    const pattUpload = document.getElementById('pattUpload');
+    const resetMarkerBtn = document.getElementById('resetMarkerBtn');
+    const sceneEl = document.querySelector('a-scene');
+    let markerEl = document.getElementById('markerNode');
+
+    function makePhotoChild() {
+      const child = document.createElement('a-entity');
+      child.setAttribute('id','photoPlane');
+      child.setAttribute('geometry','primitive: plane; height: 1; width: 1.5');
+      child.setAttribute('rotation','-90 0 0');
+      child.setAttribute('position','0 0 0');
+      child.setAttribute('material','src: #uploadedTexture; side: double');
+      return child;
+    }
+
+    function swapToCustomPattern(url) {
+      const newMarker = document.createElement('a-marker');
+      newMarker.setAttribute('type','pattern');
+      newMarker.setAttribute('url', url);
+      newMarker.appendChild(makePhotoChild());
+      markerEl.parentNode.replaceChild(newMarker, markerEl);
+      markerEl = newMarker;
+    }
+
+    function resetToHiro() {
+      const newMarker = document.createElement('a-marker');
+      newMarker.setAttribute('preset','hiro');
+      newMarker.appendChild(makePhotoChild());
+      markerEl.parentNode.replaceChild(newMarker, markerEl);
+      markerEl = newMarker;
+    }
+
+    pattUpload && pattUpload.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      swapToCustomPattern(url);
+    });
+
+    resetMarkerBtn && resetMarkerBtn.addEventListener('click', resetToHiro);
+
+    // Camera permission feedback
+    sceneEl && sceneEl.addEventListener('camera-error', () => {
+      alert('Camera access failed. Please allow camera permissions and reload.');
+    });
+
+    // Marker modal
+    const markerModal = document.getElementById('markerModal');
+    const viewMarkerBtn = document.getElementById('viewMarkerBtn');
+    const closeMarkerModal = document.getElementById('closeMarkerModal');
+
+    function openMarkerModal(){ markerModal.classList.remove('hidden'); markerModal.classList.add('flex'); }
+    function closeMarker(){ markerModal.classList.add('hidden'); markerModal.classList.remove('flex'); }
+
+    // Robust image fallback if a CDN blocks the file
+    const hiroImg = document.getElementById('hiroImg');
+    if (hiroImg) {
+      const fallbacks = [
+        'https://raw.githubusercontent.com/AR-js-org/AR.js/master/aframe/examples/marker-training/examples/hiro.png',
+        'https://rawcdn.githack.com/AR-js-org/AR.js/master/aframe/examples/marker-training/examples/hiro.png'
+      ];
+      let idx = 0;
+      hiroImg.addEventListener('error', () => {
+        if (idx < fallbacks.length) {
+          hiroImg.src = fallbacks[idx++];
+        }
+      });
+    }
+
+    viewMarkerBtn && viewMarkerBtn.addEventListener('click', openMarkerModal);
+    closeMarkerModal && closeMarkerModal.addEventListener('click', closeMarker);
+    markerModal && markerModal.addEventListener('click', (e) => { if (e.target === markerModal) closeMarker(); });
+
+    window.launchAR = launchAR;
+  </script>
+</body>
+</html>
