@@ -6,6 +6,12 @@
   <title>AR - Plant Viewer</title>
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <style>
+    /* Consistent ClimateGard header */
+    .cg-header { background: rgba(0,0,0,0.8); color:#fff; position: sticky; top:0; z-index:50; }
+    .cg-bar { max-width: 1100px; margin: 0 auto; display:flex; align-items:center; justify-content: space-between; padding: 10px 16px; }
+    .cg-brand { font-weight: 700; font-size: 18px; }
+    .cg-nav a { color: #fff; margin: 0 8px; text-decoration: none; font-weight: bold; transition: color 0.3s; }
+    .cg-nav a:hover { color: #7fff00; }
     html,body{height:100%;margin:0;background:#000}
     #overlay{position:fixed;left:10px;top:10px;z-index:20;display:flex;gap:8px;flex-wrap:wrap}
     button{padding:10px 14px;border-radius:8px;border:none;background:#7fff00;color:#000;font-weight:700;cursor:pointer}
@@ -13,6 +19,20 @@
   </style>
 </head>
 <body>
+  <header class="cg-header">
+    <div class="cg-bar">
+      <div class="cg-brand">🌱 ClimateGard</div>
+      <nav class="cg-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="plants.html">Plants</a>
+        <a href="conditions.html">Conditions</a>
+        <a href="get_plant-details.html">Plant Suggestions</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
   <div id="overlay">
     <button id="startAR">Start AR</button>
     <button id="placeBtn" style="display:none">Place Plant</button>

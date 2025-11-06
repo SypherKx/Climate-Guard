@@ -12,17 +12,12 @@
       color: white;
       line-height: 1.8;
     }
-    header {
-      background: rgba(0,0,0,0.7);
-      padding: 20px;
-      text-align: center;
-    }
-    header a {
-      color: white;
-      text-decoration: none;
-      margin: 0 15px;
-      font-weight: bold;
-    }
+    /* Consistent ClimateGard header */
+    .cg-header { background: rgba(0,0,0,0.8); color:#fff; position: sticky; top:0; z-index:50; }
+    .cg-bar { max-width: 1100px; margin: 0 auto; display:flex; align-items:center; justify-content: space-between; padding: 14px 16px; }
+    .cg-brand { font-weight: 700; font-size: 20px; }
+    .cg-nav a { color: #fff; margin: 0 10px; text-decoration: none; font-weight: bold; transition: color 0.3s; }
+    .cg-nav a:hover { color: #7fff00; }
     main {
       padding: 60px;
       background: rgba(0, 0, 0, 0.5);
@@ -33,17 +28,19 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>🌱 ClimateGard</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="about.html">About</a>
-      <a href="plants.html">Plants</a>
-      <a href="conditions.html">Conditions</a>
-      <a href="get_plant-details.html">Plants suggestion</a>
-      <a href="how-it-works.html">How It Works</a>
-      <a href="contact.html">Contact</a>
-    </nav>
+  <header class="cg-header">
+    <div class="cg-bar">
+      <div class="cg-brand">🌱 ClimateGard</div>
+      <nav class="cg-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="plants.html">Plants</a>
+        <a href="conditions.html">Conditions</a>
+        <a href="get_plant-details.html">Plant Suggestions</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
   </header>
   <main>
     <h1>About ClimateGard</h1>
