@@ -1,154 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plant on Floor AR (Fixed)</title>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌿 Climate-wise Plant Database</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6') no-repeat center center/cover;
+      color: white;
+      min-height: 100vh;
+    }
+    header {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      text-align: center;
+    }
+    nav a {
+      color: white;
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #7fff00;
+    }
+    .weather-box {
+      text-align: center;
+      margin: 30px auto;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      width: 350px;
+      border-radius: 10px;
+    }
+    .weather-box input {
+      width: 80%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+    .weather-box button {
+      padding: 10px 20px;
+      border: none;
+      background: #7fff00;
+      color: black;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .weather-box button:hover {
+      background: #a1ff4d;
+    }
+    #weatherResult {
+      margin-top: 15px;
+      color: #ffffff;
+      font-size: 1.1em;
+    }
+    .plant-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+    .plant {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 10px;
+      margin: 15px;
+      padding: 20px;
+      width: 260px;
+      text-align: center;
+      transition: transform 0.3s, background 0.3s;
+    }
+    .plant:hover {
+      transform: scale(1.05);
+      background: rgba(0, 0, 0, 0.8);
+    }
+    h3 { color: #7fff00; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌿 Climate-wise Plant Database</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="plants.html">Plants</a>
+      <a href="conditions.html">Conditions</a>
+      <a href="get_plant-details.html">Plants suggestion</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
 
-    <!-- A-Frame Core -->
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <div class="weather-box">
+    <input type="text" id="cityInput" placeholder="Enter city name">
+    <button onclick="getWeather()">Get Weather</button>
+    <div id="weatherResult"></div>
+  </div>
 
-    <style>
-      html, body { margin: 0; height: 100%; overflow: hidden; }
-      #overlay {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 10;
+  <div class="plant-list" id="plantList">
+    <div class="plant"><h3>🌵 Cactus</h3><p>Thrives in dry desert climates with minimal water.</p></div>
+    <div class="plant"><h3>🌼 Aloe Vera</h3><p>Perfect for hot, dry regions — stores water in leaves.</p></div>
+    <div class="plant"><h3>🌿 Agave</h3><p>Tolerates drought and sandy soil; common in arid zones.</p></div>
+    <div class="plant"><h3>🌾 Date Palm</h3><p>Suited for hot, dry climates and sandy soil.</p></div>
+    <div class="plant"><h3>🌺 Bougainvillea</h3><p>Flourishes in warm, sunny conditions with little rain.</p></div>
+    <div class="plant"><h3>🌵 Euphorbia</h3><p>Highly drought-tolerant succulent plant.</p></div>
+    <div class="plant"><h3>🌿 Desert Rose</h3><p>Prefers sandy soil and strong sunlight.</p></div>
+    <div class="plant"><h3>🌿 Yucca</h3><p>Hardy desert plant with sword-shaped leaves.</p></div>
+    <div class="plant"><h3>🌸 Ocotillo</h3><p>Survives in rocky desert and blooms after rain.</p></div>
+    <div class="plant"><h3>🌵 Prickly Pear</h3><p>Edible cactus adapted to dry climates.</p></div>
+    <div class="plant"><h3>🌴 Mesquite Tree</h3><p>Drought-resistant and found in arid regions.</p></div>
+    <div class="plant"><h3>🌾 Sagebrush</h3><p>Thrives in deserts and semi-arid regions.</p></div>
+    <div class="plant"><h3>🌿 Joshua Tree</h3><p>Iconic plant of the Mojave Desert.</p></div>
+    <div class="plant"><h3>🌼 Desert Marigold</h3><p>Bright yellow flower adapted to desert heat.</p></div>
+    <div class="plant"><h3>🌿 Barrel Cactus</h3><p>Stores water and survives extreme drought.</p></div>
+
+    <!-- 🌴 Tropical / Humid Climates -->
+    <div class="plant"><h3>🌴 Coconut Tree</h3><p>Grows best in tropical coastal climates with high humidity.</p></div>
+    <div class="plant"><h3>🍌 Banana Plant</h3><p>Needs a warm, humid environment with rich soil.</p></div>
+    <div class="plant"><h3>🌸 Hibiscus</h3><p>Loves sunlight and humidity; common in tropical areas.</p></div>
+    <div class="plant"><h3>🌳 Mango Tree</h3><p>Ideal for tropical and subtropical regions with hot summers.</p></div>
+    <div class="plant"><h3>🌴 Areca Palm</h3><p>Thrives in tropical zones; adds freshness to humid air.</p></div>
+    <div class="plant"><h3>🌺 Jasmine</h3><p>Prefers warm, moist climates; fragrant tropical flower.</p></div>
+    <div class="plant"><h3>🌿 Papaya</h3><p>Fast-growing tree suited to tropical zones.</p></div>
+    <div class="plant"><h3>🍍 Pineapple</h3><p>Grows in tropical and moist coastal areas.</p></div>
+    <div class="plant"><h3>🌴 Breadfruit Tree</h3><p>Staple tropical tree providing edible fruits.</p></div>
+    <div class="plant"><h3>🌳 Jackfruit Tree</h3><p>Large tropical tree with massive edible fruits.</p></div>
+    <div class="plant"><h3>🌴 Palm Lily</h3><p>Loves warm, humid environments.</p></div>
+    <div class="plant"><h3>🌺 Plumeria</h3><p>Fragrant tropical flower used in leis.</p></div>
+    <div class="plant"><h3>🌿 Betel Leaf</h3><p>Climbing vine common in tropical Asia.</p></div>
+    <div class="plant"><h3>🌸 Frangipani</h3><p>Popular tropical ornamental plant.</p></div>
+    <div class="plant"><h3>🍃 Coffee Plant</h3><p>Thrives in warm tropical climates with rain.</p></div>
+
+    <!-- 🌾 Temperate Climates -->
+    <div class="plant"><h3>🌷 Tulip</h3><p>Prefers cool, temperate regions with mild summers.</p></div>
+    <div class="plant"><h3>🌻 Sunflower</h3><p>Best grown in moderate climates with full sunlight.</p></div>
+    <div class="plant"><h3>🌼 Lavender</h3><p>Enjoys sunny, dry, and temperate zones.</p></div>
+    <div class="plant"><h3>🌿 Rosemary</h3><p>Flourishes in sunny and slightly dry climates.</p></div>
+    <div class="plant"><h3>🌺 Rose</h3><p>Grows well in temperate climates with balanced moisture.</p></div>
+    <div class="plant"><h3>🍇 Grape Vine</h3><p>Loves sunny hills and mild winters in temperate regions.</p></div>
+    <div class="plant"><h3>🌼 Daisy</h3><p>Common in temperate zones; loves full sun.</p></div>
+    <div class="plant"><h3>🌳 Maple Tree</h3><p>Thrives in cool temperate regions.</p></div>
+    <div class="plant"><h3>🍎 Peach Tree</h3><p>Requires temperate climate with chilling hours.</p></div>
+    <div class="plant"><h3>🌸 Cherry Blossom</h3><p>Famous spring tree of temperate regions.</p></div>
+    <div class="plant"><h3>🌿 Thyme</h3><p>Grows best in moderate climates with sun.</p></div>
+    <div class="plant"><h3>🌾 Oats</h3><p>Cool-season crop suited for temperate weather.</p></div>
+    <div class="plant"><h3>🌿 Sage</h3><p>Prefers well-drained soil in sunny temperate zones.</p></div>
+    <div class="plant"><h3>🌸 Pansy</h3><p>Blooms in cool seasons of temperate areas.</p></div>
+    <div class="plant"><h3>🌳 Oak Tree</h3><p>Native to temperate forests; long-living tree.</p></div>
+
+    <!-- ❄️ Cold / Mountain Climates -->
+    <div class="plant"><h3>🌲 Pine Tree</h3><p>Survives extreme cold and snowy climates.</p></div>
+    <div class="plant"><h3>🍓 Strawberry</h3><p>Prefers cool weather and rich, moist soil.</p></div>
+    <div class="plant"><h3>🌾 Barley</h3><p>Cold-tolerant crop grown in hilly or snowy regions.</p></div>
+    <div class="plant"><h3>🌼 Marigold</h3><p>Can tolerate mild cold; blooms in moderate winters.</p></div>
+    <div class="plant"><h3>🌻 Daffodil</h3><p>Perfect for spring in cold or highland climates.</p></div>
+    <div class="plant"><h3>🍏 Apple Tree</h3><p>Needs a long cold winter followed by cool summer.</p></div>
+    <div class="plant"><h3>🌳 Cedar</h3><p>Hardy conifer found in mountain areas.</p></div>
+    <div class="plant"><h3>🌲 Fir Tree</h3><p>Classic evergreen of cold regions.</p></div>
+    <div class="plant"><h3>🌿 Juniper</h3><p>Cold-tolerant shrub found in alpine zones.</p></div>
+    <div class="plant"><h3>🌳 Spruce</h3><p>Thrives in high-altitude cold forests.</p></div>
+    <div class="plant"><h3>🌿 Mint</h3><p>Prefers cool, moist environments.</p></div>
+    <div class="plant"><h3>🌼 Snowdrop</h3><p>Blooms early in snowy climates.</p></div>
+    <div class="plant"><h3>🌺 Camellia</h3><p>Cold-tolerant flowering shrub.</p></div>
+    <div class="plant"><h3>🌲 Hemlock Tree</h3><p>Grows in cold, moist mountain forests.</p></div>
+    <div class="plant"><h3>🌳 Birch Tree</h3><p>Common in cold, northern temperate regions.</p></div>
+
+    <!-- 🌧️ Humid / Wet Climates -->
+    <div class="plant"><h3>🌾 Rice</h3><p>Grows best in flooded fields with warm, humid air.</p></div>
+    <div class="plant"><h3>🌿 Fern</h3><p>Thrives in moist, shaded, and humid conditions.</p></div>
+    <div class="plant"><h3>🌳 Bamboo</h3><p>Loves humidity and consistent rainfall.</p></div>
+    <div class="plant"><h3>🌼 Lotus</h3><p>Aquatic plant suited for tropical and humid climates.</p></div>
+    <div class="plant"><h3>🍃 Pepper Plant</h3><p>Flourishes in warm, rainy climates with shade.</p></div>
+    <div class="plant"><h3>🌿 Ginger</h3><p>Requires warm, moist soil and humidity.</p></div>
+    <div class="plant"><h3>🌿 Turmeric</h3><p>Thrives in tropical, humid regions.</p></div>
+    <div class="plant"><h3>🌳 Rubber Tree</h3><p>Native to wet tropical forests.</p></div>
+    <div class="plant"><h3>🌺 Water Lily</h3><p>Floats in ponds and humid wetlands.</p></div>
+    <div class="plant"><h3>🌿 Colocasia</h3><p>Thrives in wet soil and tropical rain.</p></div>
+    <div class="plant"><h3>🌾 Sugarcane</h3><p>Needs high humidity and regular rain.</p></div>
+    <div class="plant"><h3>🌳 Willow</h3><p>Grows near rivers and moist areas.</p></div>
+    <div class="plant"><h3>🌿 Taro</h3><p>Common wetland crop in Asia.</p></div>
+    <div class="plant"><h3>🍃 Tea Plant</h3><p>Needs humid weather with rainfall.</p></div>
+    <div class="plant"><h3>🌿 Banana Lily</h3><p>Floating aquatic plant for wet climates.</p></div>
+
+    <!-- 🌊 Coastal / Marine Climates -->
+    <div class="plant"><h3>🌴 Pandanus</h3><p>Found along tropical coasts.</p></div>
+    <div class="plant"><h3>🌾 Beach Grass</h3><p>Stabilizes dunes in coastal zones.</p></div>
+    <div class="plant"><h3>🌴 Sea Grape</h3><p>Salt-tolerant tree along beaches.</p></div>
+    <div class="plant"><h3>🌿 Mangrove</h3><p>Essential plant for coastal wetlands.</p></div>
+    <div class="plant"><h3>🌴 Coconut Palm</h3><p>Iconic coastal tree tolerant to salt spray.</p></div>
+    <div class="plant"><h3>🌸 Morning Glory (Beach)</h3><p>Creeper growing on sandy coasts.</p></div>
+    <div class="plant"><h3>🌿 Saltbush</h3><p>Adapts to saline coastal environments.</p></div>
+    <div class="plant"><h3>🌾 Cordgrass</h3><p>Found in coastal marshlands.</p></div>
+    <div class="plant"><h3>🌿 Samphire</h3><p>Salt-loving herb near seashores.</p></div>
+    <div class="plant"><h3>🌳 Casuarina</h3><p>Wind-resistant coastal tree.</p></div>
+
+    <!-- 🏡 Indoor / Decorative Plants -->
+    <div class="plant"><h3>🪴 Snake Plant</h3><p>Air-purifying indoor plant tolerant to low light.</p></div>
+    <div class="plant"><h3>🪴 Money Plant</h3><p>Grows in water or soil; symbolizes prosperity.</p></div>
+    <div class="plant"><h3>🪴 Spider Plant</h3><p>Easy to grow; purifies indoor air.</p></div>
+    <div class="plant"><h3>🪴 Peace Lily</h3><p>Thrives indoors with low sunlight.</p></div>
+    <div class="plant"><h3>🪴 ZZ Plant</h3><p>Requires minimal care; grows in shade.</p></div>
+    <div class="plant"><h3>🪴 Pothos</h3><p>Low-maintenance vine for indoors.</p></div>
+    <div class="plant"><h3>🪴 Rubber Plant</h3><p>Popular indoor decorative plant.</p></div>
+    <div class="plant"><h3>🪴 Jade Plant</h3><p>Succulent often kept as a houseplant.</p></div>
+    <div class="plant"><h3>🪴 Areca Palm (Indoor)</h3><p>Improves indoor air quality.</p></div>
+    <div class="plant"><h3>🪴 Chinese Evergreen</h3><p>Grows in low light conditions; easy to maintain.</p></div>
+  </div>
+
+  <script>
+    const apiKey = "22163b8cddb205bf1ae045e60d2f5e18"; // OpenWeather API key
+
+    // 🌍 Climate categories mapped to specific plants:
+    const plantCategories = {
+      desert: ["Cactus", "Aloe Vera", "Agave", "Bougainvillea", "Yucca", "Desert Rose", "Euphorbia", "Barrel Cactus"],
+      tropical: ["Coconut Tree", "Banana Plant", "Hibiscus", "Mango Tree", "Areca Palm", "Papaya", "Plumeria", "Jackfruit Tree"],
+      temperate: ["Tulip", "Sunflower", "Rose", "Lavender", "Maple Tree", "Peach Tree", "Grape Vine", "Cherry Blossom"],
+      cold: ["Pine Tree", "Cedar", "Fir Tree", "Apple Tree", "Juniper", "Spruce", "Birch Tree", "Camellia"],
+      humid: ["Rice", "Fern", "Bamboo", "Lotus", "Ginger", "Turmeric", "Water Lily", "Rubber Tree"],
+      coastal: ["Pandanus", "Beach Grass", "Sea Grape", "Mangrove", "Casuarina", "Saltbush", "Cordgrass"],
+      indoor: ["Snake Plant", "Money Plant", "Spider Plant", "Peace Lily", "ZZ Plant", "Pothos", "Jade Plant", "Areca Palm (Indoor)"]
+    };
+
+    // City-specific recommendations (prefer these when available)
+    const cityRecommendations = {
+      // India
+      "kanpur,in": ["Neem", "Bougainvillea", "Hibiscus", "Marigold", "Jasmine", "Mango Tree", "Guava", "Curry Leaf"],
+      "delhi,in": ["Neem", "Bougainvillea", "Marigold", "Rose", "Ashoka Tree", "Hibiscus", "Jasmine", "Pomegranate"],
+      "mumbai,in": ["Coconut Tree", "Areca Palm", "Hibiscus", "Jasmine", "Mango Tree", "Bougainvillea", "Banana Plant", "Ixora"],
+      "kolkata,in": ["Mango Tree", "Banana Plant", "Coconut Tree", "Areca Palm", "Hibiscus", "Papaya", "Jackfruit Tree", "Betel Leaf"],
+      "chennai,in": ["Coconut Tree", "Plumeria", "Bougainvillea", "Areca Palm", "Banana Plant", "Jasmine", "Tulsi", "Curry Leaf"],
+      "bengaluru,in": ["Rose", "Lavender", "Tulsi", "Jasmine", "Marigold", "Areca Palm", "Papaya", "Guava"],
+      "hyderabad,in": ["Neem", "Bougainvillea", "Jasmine", "Mango Tree", "Guava", "Hibiscus", "Ashoka Tree", "Aloe Vera"],
+      "ahmedabad,in": ["Neem", "Bougainvillea", "Aloe Vera", "Desert Rose", "Jasmine", "Marigold", "Guava", "Pomegranate"],
+      "jaipur,in": ["Neem", "Bougainvillea", "Aloe Vera", "Desert Rose", "Jasmine", "Marigold", "Ashoka Tree", "Prosopis (Khejri)"]
+    };
+
+    async function getWeather() {
+      const city = document.getElementById("cityInput").value.trim();
+      const weatherResult = document.getElementById("weatherResult");
+      const plantList = document.getElementById("plantList");
+      plantList.innerHTML = "";
+
+      if (!city) {
+        weatherResult.innerHTML = "<span style='color:red'>Please enter a city name.</span>";
+        return;
       }
-      button {
-        padding: 12px 18px;
-        font-size: 16px;
-        border: none;
-        border-radius: 8px;
-        background: green;
-        color: white;
-        cursor: pointer;
-      }
-    </style>
-  </head>
 
-  <body>
-    <div id="overlay">
-      <button id="startAR">Start AR 🌿</button>
-      <button id="placeButton" style="display:none;">Place Plant 🌱</button>
-    </div>
+      try {
+        const response = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`
+        );
+        const data = await response.json();
 
-    <a-scene
-      vr-mode-ui="enabled: false"
-      embedded
-      renderer="colorManagement: true; physicallyCorrectLights;"
-      webxr="optionalFeatures: hit-test, dom-overlay, local-floor; overlayElement: #overlay;"
-      device-orientation-permission-ui="enabled: true;"
-    >
-      <a-entity light="type: directional; intensity: 1;" position="1 3 2"></a-entity>
-      <a-entity light="type: ambient; intensity: 0.6"></a-entity>
-
-      <!-- Reticle -->
-      <a-entity
-        id="reticle"
-        visible="false"
-        geometry="primitive: ring; radiusInner: 0.04; radiusOuter: 0.05;"
-        material="color: lime; shader: flat;"
-        rotation="-90 0 0"
-      ></a-entity>
-
-      <!-- Plant Model -->
-      <a-entity
-        id="plant"
-        visible="false"
-        scale="0.5 0.5 0.5"
-        gltf-model="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/Avocado/glTF-Binary/Avocado.glb"
-      ></a-entity>
-
-      <a-camera position="0 1.6 0"></a-camera>
-    </a-scene>
-
-    <script>
-      const startBtn = document.getElementById("startAR");
-      const placeBtn = document.getElementById("placeButton");
-      const scene = document.querySelector("a-scene");
-      const reticle = document.getElementById("reticle");
-      const plant = document.getElementById("plant");
-
-      let xrHitTestSource = null;
-      let xrSession = null;
-      let xrRefSpace = null;
-
-      startBtn.onclick = async () => {
-        if (!navigator.xr) {
-          alert("WebXR not supported on this browser.");
+        if (data.cod !== 200) {
+          weatherResult.innerHTML = `<span style='color:red'>City not found!</span>`;
           return;
         }
 
-        const supported = await navigator.xr.isSessionSupported("immersive-ar");
-        if (!supported) {
-          alert("AR not supported on this device.");
-          return;
-        }
+        const temp = data.main.temp;
+        const humidity = data.main.humidity;
+        const condition = data.weather[0].main.toLowerCase();
 
-        xrSession = await navigator.xr.requestSession("immersive-ar", {
-          requiredFeatures: ["hit-test", "local-floor"],
-          optionalFeatures: ["dom-overlay"],
-          domOverlay: { root: document.body },
-        });
+        weatherResult.innerHTML = `
+          🌍 <strong>${data.name}</strong><br>
+          🌡️ Temperature: ${temp}°C<br>
+          💧 Humidity: ${humidity}%<br>
+          🌤️ Condition: ${condition}
+        `;
 
-        scene.renderer.xr.setSession(xrSession);
+        // 🌦️ Determine the best matching climate type dynamically
+        let category = "";
 
-        xrRefSpace = await xrSession.requestReferenceSpace("local-floor");
-        const viewerSpace = await xrSession.requestReferenceSpace("viewer");
-        xrHitTestSource = await xrSession.requestHitTestSource({ space: viewerSpace });
-
-        xrSession.addEventListener("end", () => {
-          xrHitTestSource = null;
-          xrSession = null;
-          startBtn.style.display = "inline-block";
-          placeBtn.style.display = "none";
-        });
-
-        startBtn.style.display = "none";
-        placeBtn.style.display = "inline-block";
-
-        xrSession.requestAnimationFrame(onXRFrame);
-      };
-
-      function onXRFrame(time, frame) {
-        if (!xrSession) return;
-        const session = xrSession;
-        session.requestAnimationFrame(onXRFrame);
-
-        const hitTestResults = frame.getHitTestResults(xrHitTestSource);
-        if (hitTestResults.length > 0) {
-          const hitPose = hitTestResults[0].getPose(xrRefSpace);
-          if (!hitPose) return;
-
-          reticle.visible = true;
-          reticle.object3D.position.set(
-            hitPose.transform.position.x,
-            hitPose.transform.position.y,
-            hitPose.transform.position.z
-          );
-          reticle.object3D.quaternion.set(
-            hitPose.transform.orientation.x,
-            hitPose.transform.orientation.y,
-            hitPose.transform.orientation.z,
-            hitPose.transform.orientation.w
-          );
+        if (condition.includes("rain") || condition.includes("storm") || humidity > 80) {
+          category = "humid";
+        } else if (condition.includes("snow") || temp < 10) {
+          category = "cold";
+        } else if (condition.includes("cloud") && temp >= 15 && temp <= 25) {
+          category = "temperate";
+        } else if (temp > 35 && humidity < 50) {
+          category = "desert";
+        } else if (temp > 25 && humidity > 60) {
+          category = "tropical";
+        } else if (condition.includes("mist") || condition.includes("fog")) {
+          category = "humid";
+        } else if (temp >= 20 && humidity >= 40 && humidity <= 60) {
+          category = "temperate";
+        } else if (condition.includes("clear") && temp >= 28 && humidity <= 50) {
+          category = "desert";
         } else {
-          reticle.visible = false;
+          category = "indoor";
         }
-      }
 
-      placeBtn.onclick = () => {
-        if (!reticle.visible) {
-          alert("Move your phone to find a surface first!");
-          return;
+        // Prefer city-specific lists when available
+        const cityKey = `${data.name.toLowerCase()},${(data.sys.country || '').toLowerCase()}`;
+        const cityPlants = cityRecommendations[cityKey];
+
+        // 🌱 Show suitable plants for that city/climate
+        const plants = cityPlants || plantCategories[category] || [];
+        if (plants.length === 0) {
+          plantList.innerHTML = "<p>No plants found for this location.</p>";
+        } else {
+          plants.forEach(p => {
+            const div = document.createElement("div");
+            div.classList.add("plant");
+            const suffix = cityPlants ? `suitable for ${data.name}` : `perfect for ${category} climates`;
+            div.innerHTML = `<h3>${p}</h3><p>${suffix}.</p>`;
+            plantList.appendChild(div);
+          });
         }
-        const pos = reticle.getAttribute("position");
-        plant.setAttribute("position", pos);
-        plant.setAttribute("visible", "true");
-      };
-    </script>
-  </body>
-  <!---->
+
+      } catch (error) {
+        weatherResult.innerHTML = "<span style='color:red'>Error fetching weather data.</span>";
+      }
+    }
+  </script>
+
+<!-- AR button injector and mapping -->
+<script>
+const plantDimensions = {
+  "Cactus": [0.6,0.4],
+  "Aloe Vera": [0.5,0.3],
+  "Agave": [1.0,0.6],
+  "Bougainvillea": [2.0,1.8],
+  "Yucca": [1.5,0.8],
+  "Desert Rose": [0.8,0.6],
+  "Coconut Tree": [4.0,2.5],
+  "Banana Plant": [2.5,1.2],
+  "Hibiscus": [1.2,0.9],
+  "Mango Tree": [5.0,3.5],
+  "Areca Palm": [2.0,1.0],
+  "Tulip": [0.3,0.1],
+  "Sunflower": [1.8,0.5],
+  "Lavender": [0.4,0.6],
+  "Rose": [0.6,0.4],
+  "Pine Tree": [6.0,2.5],
+  "Apple Tree": [4.0,2.5],
+  "Fern": [0.5,0.6],
+  "Bamboo": [3.0,0.8],
+  "Lotus": [0.3,0.5],
+  "Snake Plant": [0.8,0.5],
+  "Money Plant": [1.2,0.8],
+  "Spider Plant": [0.4,0.6],
+  "ZZ Plant": [0.7,0.5]
+};
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const plantCards = document.querySelectorAll('.plant');
+  plantCards.forEach(card=>{
+    const h = card.querySelector('h3');
+    if (!h) return;
+    const name = h.innerText.replace(/^[^A-Za-z0-9]*/,'').trim();
+    const btn = document.createElement('a');
+    btn.innerText = 'View in AR';
+    btn.setAttribute('role','button');
+    btn.style.cssText = 'display:inline-block;margin-top:8px;padding:8px 12px;border-radius:6px;background:#7fff00;color:#000;font-weight:700;text-decoration:none;cursor:pointer';
+    btn.href = '#';
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const dims = plantDimensions[name] || [0.6,0.4];
+      const url = `ar-view.html?plant=${encodeURIComponent(name)}&height=${encodeURIComponent(dims[0])}&width=${encodeURIComponent(dims[1])}`;
+      window.open(url,'_blank');
+    });
+    card.appendChild(btn);
+  });
+});
+</script>
+
+</body>
 </html>
