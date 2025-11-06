@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    { "src": "/$", "dest": "/index.html" },
+    { "src": "/index", "dest": "/index.html" },
+    { "src": "/plants", "dest": "/plants.html" },
+    { "src": "/conditions", "dest": "/conditions.html" },
+    { "src": "/about", "dest": "/about.html" },
+    { "src": "/contact", "dest": "/contact.html" },
+    { "src": "/how-it-works", "dest": "/how-it-works.html" },
+    { "src": "/get_plant-details", "dest": "/get_plant-details.html" },
+    { "src": "/ar-view", "dest": "/ar-view.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    }
+  ]
+}
+
